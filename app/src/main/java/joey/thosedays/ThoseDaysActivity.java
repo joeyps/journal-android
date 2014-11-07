@@ -1,26 +1,28 @@
 package joey.thosedays;
 
-import android.app.Activity;
-
+import android.accounts.Account;
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
+import android.content.ContentResolver;
 import android.os.Bundle;
-import android.view.Gravity;
+import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+
+import com.thosedays.sync.Config;
 
 
-public class MainActivity extends Activity
+public class ThoseDaysActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+
+    private static final String LOG_TAG = ThoseDaysActivity.class.getSimpleName();
+    // Instance fields
+    Account mAccount;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -37,6 +39,13 @@ public class MainActivity extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Create the dummy account
+        mAccount = getIntent().getParcelableExtra(Config.EXTRA_ACCOUNT);
+        if (mAccount == null) {
+            finish();
+            return;
+        }
+
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
@@ -45,6 +54,8 @@ public class MainActivity extends Activity
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
+
+        forceSync();
     }
 
     @Override
@@ -138,9 +149,18 @@ public class MainActivity extends Activity
         @Override
         public void onAttach(Activity activity) {
             super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
+            ((ThoseDaysActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
         }
+    }
+
+    private void forceSync() {
+        Bundle settingsBundle = new Bundle();
+        //Forces a manual sync. The sync adapter framework ignores the existing settings
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        //Forces the sync to start immediately.
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(mAccount, Config.AUTHORITY, settingsBundle);
     }
 
 }
