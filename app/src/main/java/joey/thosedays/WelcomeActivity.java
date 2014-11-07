@@ -18,7 +18,7 @@ import android.view.View;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.google.gson.Gson;
-import com.thosedays.com.thosedays.utils.Worker;
+import com.thosedays.utils.Worker;
 import com.thosedays.model.AuthToken;
 import com.thosedays.model.User;
 import com.thosedays.sync.Config;
