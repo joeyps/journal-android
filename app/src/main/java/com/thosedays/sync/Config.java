@@ -15,5 +15,14 @@ public class Config {
     public static final String AUTH_URL = HOST + "/_auth";
     public static final String API_URL = HOST + "/_api";
 
+    // Manifest URL
+    public static final String MANIFEST_URL = HOST + "/_sync/manifest";
+
     public static final String EXTRA_ACCOUNT = "account";
+
+    //http request
+    public static final String HEADER_AUTHORIZATION = "Authorization";
+
+    //authorization
+    public static final String AUTH_TYPE = "auth";
 }

@@ -22,6 +22,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String LOG_TAG = SyncAdapter.class.getSimpleName();
 
     // Global variables
+    private final Context mContext;
     // Define a variable to contain a content resolver instance
     ContentResolver mContentResolver;
 
@@ -30,11 +31,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      */
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
-        /*
-         * If your app uses a content resolver, get an instance of it
-         * from the incoming Context
-         */
-        mContentResolver = context.getContentResolver();
+        mContext = context;
     }
 
     /**
@@ -47,12 +44,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             boolean autoInitialize,
             boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
-        /*
-         * If your app uses a content resolver, get an instance of it
-         * from the incoming Context
-         */
-        mContentResolver = context.getContentResolver();
-
+        mContext = context;
     }
 
     @Override
@@ -62,6 +54,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             String authority,
             ContentProviderClient provider,
             SyncResult syncResult) {
+
         Log.d(LOG_TAG, "onPerformSync");
+        new SyncHelper(mContext).performSync(syncResult, account, extras);
     }
 }

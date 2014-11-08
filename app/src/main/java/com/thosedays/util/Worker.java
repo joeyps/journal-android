@@ -1,4 +1,4 @@
-package com.thosedays.utils;
+package com.thosedays.util;
 
 import android.os.Handler;
 import android.os.HandlerThread;

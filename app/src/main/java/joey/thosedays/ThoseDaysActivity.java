@@ -5,7 +5,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.ContentResolver;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.thosedays.fragment.ThoseDaysFragment;
 import com.thosedays.sync.Config;
 
 
@@ -55,7 +56,18 @@ public class ThoseDaysActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        forceSync();
+        // Create new fragment and transaction
+        Fragment newFragment = new ThoseDaysFragment();
+        newFragment.setArguments(getIntent().getExtras());
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack
+        transaction.replace(R.id.container, newFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
     }
 
     @Override
@@ -152,15 +164,6 @@ public class ThoseDaysActivity extends Activity
             ((ThoseDaysActivity) activity).onSectionAttached(
                     getArguments().getInt(ARG_SECTION_NUMBER));
         }
-    }
-
-    private void forceSync() {
-        Bundle settingsBundle = new Bundle();
-        //Forces a manual sync. The sync adapter framework ignores the existing settings
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        //Forces the sync to start immediately.
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        ContentResolver.requestSync(mAccount, Config.AUTHORITY, settingsBundle);
     }
 
 }

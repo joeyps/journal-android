@@ -2,16 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="joey.thosedays" >
 
-    <uses-permission
-        android:name="android.permission.INTERNET"/>
-    <uses-permission
-        android:name="android.permission.READ_SYNC_SETTINGS"/>
-    <uses-permission
-        android:name="android.permission.WRITE_SYNC_SETTINGS"/>
-    <uses-permission
-        android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
-    <uses-permission
-        android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
 
     <application
         android:allowBackup="true"
@@ -32,6 +28,10 @@
             android:name=".ThoseDaysActivity"
             android:label="@string/app_name" >
         </activity>
+        <provider
+            android:name="com.thosedays.provider.EventProvider"
+            android:authorities="com.thosedays.eventprovider"
+            android:exported="false"/>
         <service
             android:name="com.thosedays.sync.AuthenticatorService">
             <intent-filter>

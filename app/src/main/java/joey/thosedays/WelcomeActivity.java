@@ -18,7 +18,8 @@ import android.view.View;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.google.gson.Gson;
-import com.thosedays.utils.Worker;
+import com.thosedays.util.AccountUtils;
+import com.thosedays.util.Worker;
 import com.thosedays.model.AuthToken;
 import com.thosedays.model.User;
 import com.thosedays.sync.Config;
@@ -77,13 +78,10 @@ public class WelcomeActivity extends Activity {
                     Worker.get().post(new Runnable() {
                         @Override
                         public void run() {
-                            User user = authViaFb(token);
-                            if (user != null) {
-                                Account account = createSyncAccount(WelcomeActivity.this, user.id);
-                                if (account != null) {
-                                    launchMainActivity(account);
-                                    finish();
-                                }
+                            Account account = authViaFb(token);
+                            if (account != null) {
+                                launchMainActivity(account);
+                                finish();
                             }
                         }
                     });
@@ -100,7 +98,7 @@ public class WelcomeActivity extends Activity {
         startActivity(intent);
     }
 
-    private User authViaFb(String accessToken) {
+    private Account authViaFb(String accessToken) {
         BasicHttpClient httpClient = new BasicHttpClient();
         HttpResponse response = httpClient.get(Config.AUTH_URL + "/fb?access_token=" + accessToken, null);
         if (response == null) {
@@ -112,14 +110,18 @@ public class WelcomeActivity extends Activity {
         if (status == HttpURLConnection.HTTP_OK) {
             String json = response.getBodyAsString();
             AuthToken authToken = new Gson().fromJson(json, AuthToken.class);
-            return requestMe(authToken.token);
+            User user = requestMe(authToken.token);
+            if (user != null) {
+                return createSyncAccount(this, user.id, authToken.token);
+            }
         }
         return null;
     }
 
     private User requestMe(String token) {
         BasicHttpClient httpClient = new BasicHttpClient();
-        HttpResponse response = httpClient.get(Config.API_URL + "/me?access_token=" + token, null);
+        httpClient.addHeader(Config.HEADER_AUTHORIZATION, "access_token=" + token);
+        HttpResponse response = httpClient.get(Config.API_URL + "/me", null);
         if (response == null) {
             //LOGE(TAG, "Request for manifest returned null response.");
             //throw new IOException("Request for data manifest returned null response.");
@@ -153,7 +155,7 @@ public class WelcomeActivity extends Activity {
      *
      * @param context The application context
      */
-    private Account createSyncAccount(Context context, String accountName) {
+    private Account createSyncAccount(Context context, String accountName, String token) {
         // Get an instance of the Android account manager
         AccountManager accountManager =
                 (AccountManager) context.getSystemService(
@@ -173,6 +175,8 @@ public class WelcomeActivity extends Activity {
              * then call context.setIsSyncable(account, AUTHORITY, 1)
              * here.
              */
+
+            AccountUtils.setAuthToken(this, newAccount, Config.AUTH_TYPE, token);
             Log.d(LOG_TAG, "added account " + newAccount.name);
             return newAccount;
         } else {
