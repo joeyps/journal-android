@@ -3,9 +3,12 @@
 <ListView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingTop="@dimen/cardview_spacing"
+    android:paddingBottom="@dimen/cardview_spacing"
     android:paddingLeft="@dimen/cardview_spacing"
     android:paddingRight="@dimen/cardview_spacing"
     android:divider="@android:color/transparent"
-    android:dividerHeight="@dimen/cardview_spacing">
+    android:dividerHeight="@dimen/cardview_spacing"
+    android:scrollbars="none">
 
 </ListView>
