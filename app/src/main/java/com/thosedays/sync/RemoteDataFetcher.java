@@ -27,6 +27,10 @@ public class RemoteDataFetcher {
     private static final String TAG = makeLogTag(RemoteDataFetcher.class);
     private static final String MANIFEST_FORMAT = "manifest-json-v1";
 
+    // timestamp of the manifest file on the server
+    private String mServerTimestamp = null;
+    private String mModifiedSince = null;
+
     private String mManifestUrl;
     private String mAuthToken;
 
@@ -50,6 +54,7 @@ public class RemoteDataFetcher {
             LOGW(TAG, "Manifest URL is empty (remote sync disabled!).");
             return null;
         }
+        mModifiedSince = refTimestamp;
 
         BasicHttpClient httpClient = new BasicHttpClient();
         httpClient.addHeader(Config.HEADER_AUTHORIZATION, "access_token=" + mAuthToken);
@@ -61,12 +66,13 @@ public class RemoteDataFetcher {
         // refTimestamp is in a wrong format, we simply ignore it. But pay attention to this
         // warning in the log, because it might mean unnecessary data is being downloaded.
         if (!TextUtils.isEmpty(refTimestamp)) {
-//            if (TimeUtils.isValidFormatForIfModifiedSinceHeader(refTimestamp)) {
-//                httpClient.addHeader("If-Modified-Since", refTimestamp);
-//            } else {
+            if (Config.isValidFormatForIfModifiedSinceHeader(refTimestamp)) {
+                httpClient.addHeader(Config.HEADER_MODIFIED_SINCE, refTimestamp);
+                LOGD(TAG, "Sync timestamp since " + refTimestamp);
+            } else {
                 LOGW(TAG, "Could not set If-Modified-Since HTTP header. Potentially downloading " +
                         "unnecessary data. Invalid format of refTimestamp argument: "+refTimestamp);
-//            }
+            }
         }
 
         HttpResponse response = httpClient.get(mManifestUrl, null);
@@ -78,8 +84,8 @@ public class RemoteDataFetcher {
         int status = response.getStatus();
         if (status == HttpURLConnection.HTTP_OK) {
             LOGD(TAG, "Server returned HTTP_OK, so new data is available.");
-            //mServerTimestamp = getLastModified(response);
-            //LOGD(TAG, "Server timestamp for new data is: " + mServerTimestamp);
+            mServerTimestamp = getLastModified(response);
+            LOGD(TAG, "Server timestamp for new data is: " + mServerTimestamp);
             String body = response.getBodyAsString();
             if (TextUtils.isEmpty(body)) {
                 LOGE(TAG, "Request for manifest returned empty data.");
@@ -182,6 +188,8 @@ public class RemoteDataFetcher {
         LOGD(TAG, "Cache miss. Downloading from network: " + sanitizeUrl(url));
         BasicHttpClient client = new BasicHttpClient();
         client.addHeader(Config.HEADER_AUTHORIZATION, "access_token=" + mAuthToken);
+        client.addHeader(Config.HEADER_MODIFIED_SINCE, mModifiedSince);
+        client.addHeader(Config.HEADER_LAST_MODIFIED, mServerTimestamp);
 //        client.setRequestLogger(mQuietLogger);
         HttpResponse response = client.get(url, null);
 
@@ -219,11 +227,16 @@ public class RemoteDataFetcher {
     }
 
     private String getLastModified(HttpResponse resp) {
-        if (!resp.getHeaders().containsKey("Last-Modified")) {
+        if (!resp.getHeaders().containsKey(Config.HEADER_LAST_MODIFIED)) {
             return "";
         }
 
-        List<String> s = resp.getHeaders().get("Last-Modified");
+        List<String> s = resp.getHeaders().get(Config.HEADER_LAST_MODIFIED);
         return s.isEmpty() ? "" : s.get(0);
+    }
+
+    // Returns the timestamp of the data downloaded from the server
+    public String getServerDataTimestamp() {
+        return mServerTimestamp;
     }
 }

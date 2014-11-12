@@ -14,15 +14,18 @@ public class EventContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     interface EventColumns {
-        /** Unique string identifying this block of time. */
+        /** Unique string identifying this event. */
         String EVENT_ID = "event_id";
-        /** Title describing this block of time. */
         String EVENT_DESCRIPTION = "description";
-        /** Time when this block starts. */
+        String PHOTO_URL = "photo_url";
+        String PHOTO_WIDTH = "photo_width";
+        String PHOTO_HEIGHT = "photo_height";
+        String TAGS = "tags";
         String EVENT_TIME = "event_time";
     }
 
     private static final String PATH_EVENTS = "events";
+    private static final String PATH_MESSAGES = "messages";
 
     public static class Events implements EventColumns, BaseColumns {
         public static final String BLOCK_TYPE_FREE = "free";

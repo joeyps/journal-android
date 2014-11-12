@@ -1,5 +1,6 @@
 package com.thosedays.util;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
@@ -75,6 +76,24 @@ public class SelectionBuilder {
                 + ", distinct=" + distinct + ") " + this);
         return db.query(distinct, mTable, columns, getSelection(), getSelectionArgs(), mGroupBy,
                 mHaving, orderBy, limit);
+    }
+
+    /**
+     * Execute update using the current internal state as {@code WHERE} clause.
+     */
+    public int update(SQLiteDatabase db, ContentValues values) {
+        assertTable();
+        LOGV(TAG, "update() " + this);
+        return db.update(mTable, values, getSelection(), getSelectionArgs());
+    }
+
+    /**
+     * Execute delete using the current internal state as {@code WHERE} clause.
+     */
+    public int delete(SQLiteDatabase db) {
+        assertTable();
+        LOGV(TAG, "delete() " + this);
+        return db.delete(mTable, getSelection(), getSelectionArgs());
     }
 
     /**

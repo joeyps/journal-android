@@ -50,14 +50,12 @@ public class SyncHelper {
         //LOGD(TAG, "Starting remote sync.");
         RemoteDataFetcher remoteDataFetcher = new RemoteDataFetcher(mContext, account);
         // Fetch the remote data files via RemoteConferenceDataFetcher
-        RawData[] dataFiles = remoteDataFetcher.fetchDataIfNewer("");
-                //mDataHandler.getDataTimestamp());
+        RawData[] dataFiles = remoteDataFetcher.fetchDataIfNewer(mDataHandler.getDataTimestamp());
 
         if (dataFiles != null) {
             LOGI(TAG, "Applying remote data.");
             // save the remote data to the database
-            mDataHandler.applyData(dataFiles, "", true);
-//            mDataHandler.applyData(dataFiles, mRemoteDataFetcher.getServerDataTimestamp(), true);
+            mDataHandler.applyData(dataFiles, remoteDataFetcher.getServerDataTimestamp(), true);
             LOGI(TAG, "Done applying remote data.");
 
             // mark that conference data sync succeeded

@@ -5,6 +5,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.OperationApplicationException;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 
 import com.thosedays.model.handler.EventsHandler;
 import com.thosedays.model.handler.JSONHandler;
@@ -24,6 +25,14 @@ import static com.thosedays.util.LogUtils.makeLogTag;
 public class RemoteDataHandler {
 
     private static final String TAG = makeLogTag(RemoteDataHandler.class);
+
+    // Shared preferences key under which we store the timestamp that corresponds to
+    // the data we currently have in our content provider.
+    private static final String SP_KEY_DATA_TIMESTAMP = "data_timestamp";
+
+    // symbolic timestamp to use when we are missing timestamp data (which means our data is
+    // really old or nonexistent)
+    private static final String DEFAULT_TIMESTAMP = "Sat, 1 Jan 2000 00:00:00 UTC";
 
     //data keys
     private static final String DATA_KEY_EVENTS = "events";
@@ -122,7 +131,7 @@ public class RemoteDataHandler {
 
 
         // update our data timestamp
-//        setDataTimestamp(dataTimestamp);
+        setDataTimestamp(dataTimestamp);
         LOGD(TAG, "Done applying conference data.");
     }
 
@@ -137,5 +146,25 @@ public class RemoteDataHandler {
         if (mHandlerForKey.containsKey(data.type)) {
             mHandlerForKey.get(data.type).process(data.data);
         }
+    }
+
+    // Returns the timestamp of the data we have in the content provider.
+    public String getDataTimestamp() {
+        return PreferenceManager.getDefaultSharedPreferences(mContext).getString(
+                SP_KEY_DATA_TIMESTAMP, DEFAULT_TIMESTAMP);
+    }
+
+    // Sets the timestamp of the data we have in the content provider.
+    public void setDataTimestamp(String timestamp) {
+        LOGD(TAG, "Setting data timestamp to: " + timestamp);
+        PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(
+                SP_KEY_DATA_TIMESTAMP, timestamp).commit();
+    }
+
+    // Reset the timestamp of the data we have in the content provider
+    public static void resetDataTimestamp(final Context context) {
+        LOGD(TAG, "Resetting data timestamp to default (to invalidate our synced data)");
+        PreferenceManager.getDefaultSharedPreferences(context).edit().remove(
+                SP_KEY_DATA_TIMESTAMP).commit();
     }
 }

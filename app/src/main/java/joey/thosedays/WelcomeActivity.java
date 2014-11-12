@@ -11,6 +11,7 @@ import android.content.pm.Signature;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -41,7 +42,8 @@ public class WelcomeActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Account account = getAccountIfExists();
-        if (account != null) {
+        String token = AccountUtils.getAuthToken(this, account, Config.AUTH_TYPE);
+        if (account != null && !TextUtils.isEmpty(token)) {
             launchMainActivity(account);
             finish();
             return;
@@ -184,7 +186,11 @@ public class WelcomeActivity extends Activity {
              * The account exists or some other error occurred. Log this, report it,
              * or handle it internally.
              */
-            return null;
+            Account account = getAccountIfExists();
+            if (account != null) {
+                AccountUtils.setAuthToken(this, account, Config.AUTH_TYPE, token);
+            }
+            return account;
         }
     }
 
