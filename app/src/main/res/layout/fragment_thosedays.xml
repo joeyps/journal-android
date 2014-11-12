@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ListView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/cardview_spacing"
+    android:paddingRight="@dimen/cardview_spacing"
+    android:divider="@android:color/transparent"
+    android:dividerHeight="@dimen/cardview_spacing">
 
 </ListView>

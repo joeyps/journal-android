@@ -33,6 +33,9 @@ public class EventDatabase extends SQLiteOpenHelper {
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + EventColumns.EVENT_ID + " TEXT NOT NULL,"
                 + EventColumns.EVENT_DESCRIPTION + " TEXT NOT NULL,"
+                + EventColumns.PHOTO_URL + " TEXT NOT NULL,"
+                + EventColumns.PHOTO_WIDTH + " INTEGER NOT NULL,"
+                + EventColumns.PHOTO_HEIGHT + " INTEGER NOT NULL,"
                 + EventColumns.EVENT_TIME + " DATETIME NOT NULL,"
                 + "UNIQUE (" + EventColumns.EVENT_ID + ") ON CONFLICT REPLACE)");
     }

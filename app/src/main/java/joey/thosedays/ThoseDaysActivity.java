@@ -14,7 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.thosedays.fragment.ThoseDaysFragment;
+import com.thosedays.widget.ThoseDaysFragment;
 import com.thosedays.sync.Config;
 
 
@@ -61,10 +61,8 @@ public class ThoseDaysActivity extends Activity
         newFragment.setArguments(getIntent().getExtras());
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-        // Replace whatever is in the fragment_container view with this fragment,
-        // and add the transaction to the back stack
+        // Replace whatever is in the fragment_container view with this fragment
         transaction.replace(R.id.container, newFragment);
-        transaction.addToBackStack(null);
 
         // Commit the transaction
         transaction.commit();

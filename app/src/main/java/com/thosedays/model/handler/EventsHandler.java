@@ -49,6 +49,15 @@ public class EventsHandler extends JSONHandler {
         builder.withValue(EventContract.Events.EVENT_ID, event.id);
         builder.withValue(EventContract.Events.EVENT_DESCRIPTION, TextUtils.isEmpty(event.description) ? "" : event.description);
         builder.withValue(EventContract.Events.EVENT_TIME, event.event_time);
+        if (event.photo != null) {
+            builder.withValue(EventContract.Events.PHOTO_URL, event.photo.thumb_url);
+            builder.withValue(EventContract.Events.PHOTO_WIDTH, event.photo.width);
+            builder.withValue(EventContract.Events.PHOTO_HEIGHT, event.photo.height);
+        } else {
+            builder.withValue(EventContract.Events.PHOTO_URL, "");
+            builder.withValue(EventContract.Events.PHOTO_WIDTH, 0);
+            builder.withValue(EventContract.Events.PHOTO_HEIGHT, 0);
+        }
         list.add(builder.build());
     }
 }

@@ -7,6 +7,7 @@ public class Event {
     public String id;
     public String description;
     public Photo photo;
+    public String[] tags;
     public String event_time;
     public String created_time;
 }
