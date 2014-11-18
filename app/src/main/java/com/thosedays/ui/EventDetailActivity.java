@@ -31,6 +31,7 @@ public class EventDetailActivity extends FragmentActivity implements LoaderManag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
         mPager = (ViewPager) findViewById(R.id.pager);
+        mPager.setPageMargin(getResources().getDimensionPixelSize(R.dimen.pager_margin));
         getLoaderManager().initLoader(URL_LOADER, null, this);
     }
 

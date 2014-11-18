@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/shadow"/>
+            <size
+                android:width="@dimen/floating_button_diameter"
+                android:height="@dimen/floating_button_diameter"/>
+        </shape>
+    </item>
+    <item
+        android:bottom="1dp"
+        android:right="1dp">
+        <shape
+            android:shape="oval">
+            <solid android:color="@color/floating_button_bg_color" />
+            <size
+                android:width="@dimen/floating_button_diameter"
+                android:height="@dimen/floating_button_diameter"/>
+        </shape>
+    </item>
+    <item
+        android:bottom="1dp"
+        android:right="1dp">
+        <shape
+            android:shape="oval">
+            <solid android:color="@color/shadow" />
+            <size
+                android:width="@dimen/floating_button_diameter"
+                android:height="@dimen/floating_button_diameter"/>
+        </shape>
+    </item>
+</layer-list>

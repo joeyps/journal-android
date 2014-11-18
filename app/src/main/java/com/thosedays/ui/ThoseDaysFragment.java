@@ -12,6 +12,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,7 +54,16 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
                              Bundle savedInstanceState) {
         mAccount = getArguments().getParcelable(Config.EXTRA_ACCOUNT);
         // Inflate the layout for this fragment
-        ListView listview = (ListView) inflater.inflate(R.layout.fragment_thosedays, container, false);
+        View view = inflater.inflate(R.layout.fragment_thosedays, container, false);
+        view.findViewById(R.id.button_add).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), AddEventActivity.class);
+                startActivityForResult(intent, 0);
+            }
+        });
+        ListView listview = (ListView) view.findViewById(R.id.list);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -70,7 +80,7 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
         listview.setAdapter(mAdapter);
         getLoaderManager().initLoader(URL_LOADER, null, this);
         forceSync();
-        return listview;
+        return view;
     }
 
     private void forceSync() {
@@ -185,7 +195,7 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
             vh.imageView.setMinimumHeight(height);
             vh.imageView.setImageBitmap(null);
             String url = cursor.getString(cursor.getColumnIndex(EventContract.Events.PHOTO_URL));
-            if (url != null) {
+            if (!TextUtils.isEmpty(url)) {
                 url = url + "700";
                 String key = ImageLoader.load(vh, url);
                 vh.imageView.setTag(key);
