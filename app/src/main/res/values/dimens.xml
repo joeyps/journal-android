@@ -6,10 +6,15 @@
     <!-- Per the design guidelines, navigation drawers should be between 240dp and 320dp:
          https://developer.android.com/design/patterns/navigation-drawer.html -->
     <dimen name="navigation_drawer_width">240dp</dimen>
+    <dimen name="navigation_drawer_profile_picture_width">150dp</dimen>
+    <dimen name="navigation_drawer_profile_picture_height">150dp</dimen>
     <dimen name="cardview_spacing">20dp</dimen>
     <dimen name="pager_margin">20dp</dimen>
     <dimen name="floating_button_diameter">60dp</dimen>
     <dimen name="floating_button_margin">16dp</dimen>
     <dimen name="elevation_low">1dp</dimen>
     <dimen name="elevation_high">4dp</dimen>
+    <!-- common -->
+    <dimen name="margin_l">5dp</dimen>
+    <dimen name="margin_m">3.3dp</dimen>
 </resources>

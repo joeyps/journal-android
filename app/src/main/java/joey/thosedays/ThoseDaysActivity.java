@@ -5,7 +5,6 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
@@ -14,8 +13,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.thosedays.ui.ThoseDaysFragment;
 import com.thosedays.sync.Config;
+import com.thosedays.ui.FriendsFragment;
+import com.thosedays.ui.MapFragment;
+import com.thosedays.ui.TagsFragment;
+import com.thosedays.ui.ThoseDaysFragment;
 
 
 public class ThoseDaysActivity extends Activity
@@ -56,37 +58,43 @@ public class ThoseDaysActivity extends Activity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        // Create new fragment and transaction
-        Fragment newFragment = new ThoseDaysFragment();
-        newFragment.setArguments(getIntent().getExtras());
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
-        // Replace whatever is in the fragment_container view with this fragment
-        transaction.replace(R.id.container, newFragment);
-
-        // Commit the transaction
-        transaction.commit();
+//        // Create new fragment and transaction
+//        Fragment newFragment = new ThoseDaysFragment();
+//        newFragment.setArguments(getIntent().getExtras());
+//        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+//
+//        // Replace whatever is in the fragment_container view with this fragment
+//        transaction.replace(R.id.container, newFragment);
+//
+//        // Commit the transaction
+//        transaction.commit();
     }
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
+        Fragment fragment = PlaceholderFragment.newInstance(position);
+        if (fragment == null)
+            return;
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                .replace(R.id.container, fragment)
                 .commit();
     }
 
     public void onSectionAttached(int number) {
         switch (number) {
+            case 0:
+                mTitle = getString(R.string.app_name);
+                break;
             case 1:
-                mTitle = getString(R.string.title_section1);
+                mTitle = getString(R.string.title_map);
                 break;
             case 2:
-                mTitle = getString(R.string.title_section2);
+                mTitle = getString(R.string.title_friends);
                 break;
             case 3:
-                mTitle = getString(R.string.title_section3);
+                mTitle = getString(R.string.title_tags);
                 break;
         }
     }
@@ -106,7 +114,7 @@ public class ThoseDaysActivity extends Activity
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.main, menu);
-            restoreActionBar();
+            //restoreActionBar();
             return true;
         }
         return super.onCreateOptionsMenu(menu);
@@ -138,11 +146,32 @@ public class ThoseDaysActivity extends Activity
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
+        public static Fragment newInstance(int sectionNumber) {
+            Fragment fragment = null;
             Bundle args = new Bundle();
+            switch (sectionNumber) {
+                case 0:
+                    fragment = new ThoseDaysFragment();
+                    break;
+                case 1:
+                    fragment = new MapFragment();
+                    break;
+                case 2:
+                    fragment = new FriendsFragment();
+                    break;
+                case 3:
+                    fragment = new TagsFragment();
+                    break;
+                case 4:
+                    break;
+                default:
+                    break;
+            }
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
+            if (fragment != null) {
+                fragment.setArguments(args);
+            }
+
             return fragment;
         }
 
@@ -159,8 +188,8 @@ public class ThoseDaysActivity extends Activity
         @Override
         public void onAttach(Activity activity) {
             super.onAttach(activity);
-            ((ThoseDaysActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
+//            ((ThoseDaysActivity) activity).onSectionAttached(
+//                    getArguments().getInt(ARG_SECTION_NUMBER));
         }
     }
 
