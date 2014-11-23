@@ -8,4 +8,5 @@ public class Photo {
     public int width;
     public int height;
     public String thumb_url;
+    public String utc;
 }

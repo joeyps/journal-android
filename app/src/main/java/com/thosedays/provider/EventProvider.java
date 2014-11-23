@@ -113,8 +113,15 @@ public class EventProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
-        return 0;
+    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+//        String accountName = getCurrentAccountName(uri, false);
+        LOGV(TAG, "update(uri=" + uri + ", values=" + values.toString() + ")");
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+
+        final SelectionBuilder builder = buildSimpleSelection(uri);
+        int retVal = builder.where(selection, selectionArgs).update(db, values);
+//        notifyChange(uri);
+        return retVal;
     }
 
     /**
@@ -172,5 +179,28 @@ public class EventProvider extends ContentProvider {
             }
         }
         return null;
+    }
+
+    /**
+     * Build a simple {@link SelectionBuilder} to match the requested
+     * {@link Uri}. This is usually enough to support {@link #insert},
+     * {@link #update}, and {@link #delete} operations.
+     */
+    private SelectionBuilder buildSimpleSelection(Uri uri) {
+        final SelectionBuilder builder = new SelectionBuilder();
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case EVENTS: {
+                return builder.table(EventDatabase.Tables.EVENTS);
+            }
+            case EVENTS_ID: {
+                final String eventId = EventContract.Events.getEventId(uri);
+                return builder.table(EventDatabase.Tables.EVENTS)
+                        .where(EventContract.Events._ID + "=?", eventId);
+            }
+            default: {
+                throw new UnsupportedOperationException("Unknown uri for " + match + ": " + uri);
+            }
+        }
     }
 }

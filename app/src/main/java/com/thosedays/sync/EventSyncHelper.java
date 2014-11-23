@@ -29,7 +29,6 @@ import com.thosedays.model.Event;
 import com.thosedays.model.Photo;
 import com.thosedays.provider.EventContract;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +46,7 @@ public class EventSyncHelper {
     private static final String TAG = makeLogTag(EventSyncHelper.class);
 
     private static final String DATA_DESCRIPTION = "desc";
-    private static final String DATA_PHOTO = "photo";
+    private static final String DATA_PHOTO_ID = "pid";
     private static final String DATA_EVENT_TIME = "event_time";
 
     private Context mContext;
@@ -72,20 +71,22 @@ public class EventSyncHelper {
         Map<String, Event> updated = new HashMap<String, Event>();
 
         while (c.moveToNext()) {
-
-            String filePath = c.getString(c.getColumnIndex(EventContract.Events.PHOTO_URL));
-            Photo photo = null;
-            String response = null;
-            if (!TextUtils.isEmpty(filePath)) {
-                response = mApi.sendFileToServer(WebServiceApi.API_PHOTO, new File(filePath));
-                photo = new Gson().fromJson(response, Photo.class);
-            }
-            String id = c.getString(c.getColumnIndex(EventContract.Events._ID));
             Map<String, Object> data = new HashMap<String, Object>();
+            String id = c.getString(c.getColumnIndex(EventContract.Events._ID));
             data.put(DATA_DESCRIPTION, c.getString(c.getColumnIndex(EventContract.Events.EVENT_DESCRIPTION)));
             data.put(DATA_EVENT_TIME, c.getString(c.getColumnIndex(EventContract.Events.EVENT_TIME)));
+
+            String fileUri = c.getString(c.getColumnIndex(EventContract.Events.PHOTO_URL));
+            Photo photo = null;
+            String response = null;
+            if (!TextUtils.isEmpty(fileUri)) {
+                response = mApi.sendFileToServer(WebServiceApi.API_PHOTO, Uri.parse(fileUri));
+                photo = new Gson().fromJson(response, Photo.class);
+                data.put(DATA_EVENT_TIME, photo.utc);
+            }
+
             if (photo != null)
-                data.put(DATA_PHOTO, photo.id);
+                data.put(DATA_PHOTO_ID, photo.id);
             response = mApi.sendDataToServer(WebServiceApi.API_EVENT, data);
             if (response != null) {
                 LOGI(TAG, "Successfully updated id " + id);
@@ -101,8 +102,19 @@ public class EventSyncHelper {
         // Flip the "synced" flag to true for any successfully updated sessions, but leave them
         // in the database to prevent duplicate feedback
         for (Map.Entry<String, Event> e : updated.entrySet()) {
+            Event event = e.getValue();
             ContentValues contentValues = new ContentValues();
-            contentValues.put(EventContract.Events.EVENT_ID, e.getValue().id);
+            contentValues.put(EventContract.Events.EVENT_ID, event.id);
+            if (event.photo != null) {
+                contentValues.put(EventContract.Events.PHOTO_URL, event.photo.thumb_url);
+                contentValues.put(EventContract.Events.PHOTO_WIDTH, event.photo.width);
+                contentValues.put(EventContract.Events.PHOTO_HEIGHT, event.photo.height);
+            } else {
+                contentValues.put(EventContract.Events.PHOTO_URL, "");
+                contentValues.put(EventContract.Events.PHOTO_WIDTH, 0);
+                contentValues.put(EventContract.Events.PHOTO_HEIGHT, 0);
+            }
+            contentValues.put(EventContract.Events.EVENT_TIME, event.event_time);
             contentValues.put(EventContract.Events.SYNCED, 1);
             cr.update(EventContract.Events.buildEventUri(e.getKey()), contentValues, null, null);
         }

@@ -18,6 +18,9 @@ package com.thosedays.sync;
 
 import android.accounts.Account;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.MediaStore;
 
 import com.google.gson.Gson;
 import com.thosedays.util.AccountUtils;
@@ -25,9 +28,12 @@ import com.turbomanage.httpclient.BasicHttpClient;
 import com.turbomanage.httpclient.HttpResponse;
 import com.turbomanage.httpclient.ParameterMap;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
@@ -88,10 +94,7 @@ public class WebServiceApi {
      * @param api The ID of the session that was reviewed.
      * @return whether or not updating succeeded
      */
-    public String sendFileToServer(String api, File file) {
-
-        BasicHttpClient httpClient = new BasicHttpClient();
-        httpClient.addHeader(Config.HEADER_AUTHORIZATION, "access_token=" + mAuthToken);
+    public String sendFileToServer(String api, Uri uri) {
         HttpURLConnection connection = null;
         DataOutputStream outputStream = null;
         String boundary =  "*****";
@@ -100,7 +103,8 @@ public class WebServiceApi {
         int maxBufferSize = 1*1024*1024;
         try
         {
-            FileInputStream fileInputStream = new FileInputStream(file);
+            File file = getFile(uri);
+            final InputStream imageStream = new FileInputStream(file);
 
             URL url = new URL(mUrl + api);
             connection = (HttpURLConnection) url.openConnection();
@@ -123,19 +127,19 @@ public class WebServiceApi {
             outputStream.writeBytes("Content-Disposition: form-data; name=\"files\";filename=\"" + file.getAbsolutePath() +"\"" + crlf);
             outputStream.writeBytes(crlf);
 
-            int bytesAvailable = fileInputStream.available();
+            int bytesAvailable = imageStream.available();
             int bufferSize = Math.min(bytesAvailable, maxBufferSize);
             byte[] buffer = new byte[bufferSize];
 
             // Read file
-            int bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+            int bytesRead = imageStream.read(buffer, 0, bufferSize);
 
             while (bytesRead > 0)
             {
                 outputStream.write(buffer, 0, bufferSize);
-                bytesAvailable = fileInputStream.available();
+                bytesAvailable = imageStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
-                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+                bytesRead = imageStream.read(buffer, 0, bufferSize);
             }
             //End content wrapper
             outputStream.writeBytes(crlf);
@@ -144,17 +148,42 @@ public class WebServiceApi {
             // Responses from the server (code and message)
             int serverResponseCode = connection.getResponseCode();
             String serverResponseMessage = connection.getResponseMessage();
+            final StringBuilder sb  = new StringBuilder();
+            if (serverResponseCode == HttpURLConnection.HTTP_OK) {
+                InputStream stream = connection.getInputStream();
+                InputStreamReader isReader = new InputStreamReader(stream );
+                BufferedReader br = new BufferedReader(isReader );
+                String s = null;
+                while ((s = br.readLine()) != null) {
+                    sb.append(s);
+                }
+            }
 
-            fileInputStream.close();
+            imageStream.close();
             outputStream.flush();
             outputStream.close();
             connection.disconnect();
-            return serverResponseMessage;
-        }
-        catch (Exception e) {
+            return sb.toString();
+        } catch (Exception e) {
             //Exception handling
             e.printStackTrace();
+        } finally {
+            //TODO release all resources if exception has been thrown
         }
         return null;
+    }
+
+    private File getFile(Uri uri) {
+        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+        Cursor cursor = mContext.getContentResolver().query(
+                uri, filePathColumn, null, null, null);
+        cursor.moveToFirst();
+
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        String filePath = cursor.getString(columnIndex);
+        cursor.close();
+        File file = new File(filePath);
+        return file;
     }
 }
