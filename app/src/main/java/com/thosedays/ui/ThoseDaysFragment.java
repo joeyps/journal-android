@@ -28,8 +28,6 @@ import com.thosedays.util.ImageLoader;
 
 import joey.thosedays.R;
 
-import static com.thosedays.util.LogUtils.LOGD;
-
 /**
  * Created by joey on 14/11/8.
  */
@@ -69,6 +67,7 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent();
                 intent.setClass(getActivity(), EventDetailActivity.class);
+                intent.putExtra(EventDetailActivity.EXTRA_DATA_INDEX, i);
                 startActivity(intent);
             }
         });
@@ -114,7 +113,7 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
                         },     // Projection to return
                         null,            // No selection clause
                         null,            // No selection arguments
-                        null             // Default sort order
+                        EventContract.Events.SORT_BY_EVENT_TIME             // Default sort order
                 );
             default:
                 // An invalid id was passed in
@@ -129,7 +128,6 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
      * ListView fronting this adapter to re-display
      */
         mAdapter.changeCursor(cursor);
-        LOGD("joey", "onLoadFinished");
     }
 
     /*

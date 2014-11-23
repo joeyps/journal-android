@@ -20,6 +20,7 @@ import joey.thosedays.R;
  */
 public class EventDetailActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    public static final String EXTRA_DATA_INDEX = "extra_data_index";
     // Identifies a particular Loader being used in this component
     private static final int URL_LOADER = 0;
 
@@ -54,7 +55,7 @@ public class EventDetailActivity extends FragmentActivity implements LoaderManag
                         },     // Projection to return
                         null,            // No selection clause
                         null,            // No selection arguments
-                        null             // Default sort order
+                        EventContract.Events.SORT_BY_EVENT_TIME             // Default sort order
                 );
             default:
                 // An invalid id was passed in
@@ -67,6 +68,8 @@ public class EventDetailActivity extends FragmentActivity implements LoaderManag
         if (mAdapter == null) {
             mAdapter = new EventPagerAdapter(getSupportFragmentManager(), cursor);
             mPager.setAdapter(mAdapter);
+            int currentIndex = getIntent().getIntExtra(EXTRA_DATA_INDEX, 0);
+            mPager.setCurrentItem(currentIndex);
         }
     }
 

@@ -22,6 +22,7 @@ public class EventContract {
         String PHOTO_HEIGHT = "photo_height";
         String TAGS = "tags";
         String EVENT_TIME = "event_time";
+        String SYNCED = "synced";
     }
 
     private static final String PATH_EVENTS = "events";
@@ -31,6 +32,9 @@ public class EventContract {
         public static final String BLOCK_TYPE_FREE = "free";
         public static final String BLOCK_TYPE_BREAK = "break";
         public static final String BLOCK_TYPE_KEYNOTE = "keynote";
+
+        // ORDER BY clauses
+        public static final String SORT_BY_EVENT_TIME = EVENT_TIME + " DESC";
 
         public static final boolean isValidBlockType(String type) {
             return BLOCK_TYPE_FREE.equals(type) || BLOCK_TYPE_BREAK.equals(type)
