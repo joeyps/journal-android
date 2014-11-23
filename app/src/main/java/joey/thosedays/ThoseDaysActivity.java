@@ -7,6 +7,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,10 +21,11 @@ import com.thosedays.ui.TagsFragment;
 import com.thosedays.ui.ThoseDaysFragment;
 
 
-public class ThoseDaysActivity extends Activity
+public class ThoseDaysActivity extends ActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
     private static final String LOG_TAG = ThoseDaysActivity.class.getSimpleName();
+
     // Instance fields
     Account mAccount;
 
@@ -40,14 +42,14 @@ public class ThoseDaysActivity extends Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
         // Create the dummy account
         mAccount = getIntent().getParcelableExtra(Config.EXTRA_ACCOUNT);
         if (mAccount == null) {
             finish();
             return;
         }
+
+        setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -76,6 +78,9 @@ public class ThoseDaysActivity extends Activity
         Fragment fragment = PlaceholderFragment.newInstance(position);
         if (fragment == null)
             return;
+        Bundle args = new Bundle();
+        args.putParcelable(Config.EXTRA_ACCOUNT, mAccount);
+        fragment.setArguments(args);
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragment)
@@ -167,6 +172,7 @@ public class ThoseDaysActivity extends Activity
                 default:
                     break;
             }
+
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             if (fragment != null) {
                 fragment.setArguments(args);

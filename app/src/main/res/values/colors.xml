@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="main_color">#2c4762</color>
+    <color name="darker_color">#ffffff</color>
+    <color name="accent">#f64c3f</color>
     <color name="app_bg_color">#343640</color>
     <color name="fb_color">#4c66a4</color>
     <color name="dark_primary">#ffffff</color>
