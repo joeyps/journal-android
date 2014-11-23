@@ -21,6 +21,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static final String LOG_TAG = SyncAdapter.class.getSimpleName();
 
+    public static final String EXTRA_SYNC_USER_DATA_ONLY = "EXTRA_SYNC_USER_DATA_ONLY";;
+
     // Global variables
     private final Context mContext;
     // Define a variable to contain a content resolver instance

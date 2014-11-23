@@ -58,6 +58,7 @@ public class EventsHandler extends JSONHandler {
             builder.withValue(EventContract.Events.PHOTO_WIDTH, 0);
             builder.withValue(EventContract.Events.PHOTO_HEIGHT, 0);
         }
+        builder.withValue(EventContract.Events.SYNCED, 1);
         list.add(builder.build());
     }
 }

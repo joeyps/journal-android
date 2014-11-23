@@ -37,6 +37,7 @@ public class EventDatabase extends SQLiteOpenHelper {
                 + EventColumns.PHOTO_WIDTH + " INTEGER NOT NULL,"
                 + EventColumns.PHOTO_HEIGHT + " INTEGER NOT NULL,"
                 + EventColumns.EVENT_TIME + " DATETIME NOT NULL,"
+                + EventColumns.SYNCED + " INTEGER NOT NULL,"
                 + "UNIQUE (" + EventColumns.EVENT_ID + ") ON CONFLICT REPLACE)");
     }
 

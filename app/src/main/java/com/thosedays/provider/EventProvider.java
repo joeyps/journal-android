@@ -165,6 +165,11 @@ public class EventProvider extends ContentProvider {
             case EVENTS: {
                 return builder.table(EventDatabase.Tables.EVENTS);
             }
+            case EVENTS_ID: {
+                final String eventId = EventContract.Events.getEventId(uri);
+                return builder.table(EventDatabase.Tables.EVENTS)
+                        .where(EventContract.Events.EVENT_ID + "=?", eventId);
+            }
         }
         return null;
     }
