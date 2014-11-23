@@ -21,17 +21,26 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.thosedays.provider.EventContract;
 import com.thosedays.sync.Config;
+import com.thosedays.sync.SyncHelper;
 import com.thosedays.util.ImageLoader;
 
 import joey.thosedays.R;
+
+import static com.thosedays.util.LogUtils.LOGD;
+import static com.thosedays.util.LogUtils.makeLogTag;
 
 /**
  * Created by joey on 14/11/8.
  */
 public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final String TAG = makeLogTag(ThoseDaysFragment.class);
+
+    public static final int REQUEST_ADD = 100001;
 
     // Identifies a particular Loader being used in this component
     private static final int URL_LOADER = 0;
@@ -58,7 +67,7 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
             public void onClick(View view) {
                 Intent intent = new Intent();
                 intent.setClass(getActivity(), AddEventActivity.class);
-                startActivityForResult(intent, 0);
+                startActivityForResult(intent, REQUEST_ADD);
             }
         });
         ListView listview = (ListView) view.findViewById(R.id.list);
@@ -141,6 +150,17 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
          * This prevents memory leaks.
          */
         mAdapter.changeCursor(null);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        LOGD(TAG, "onActivityResult, requestCode=" + requestCode + " resultCode=" + resultCode);
+        if (requestCode == REQUEST_ADD && resultCode == Activity.RESULT_OK) {
+            SyncHelper.requestManualSync(mAccount, true);
+            getLoaderManager().restartLoader(URL_LOADER, null, this);
+            Toast.makeText(getActivity(), "Event has been posted", Toast.LENGTH_LONG).show();
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private static class ViewHolder implements ImageLoader.ImageHolder {
