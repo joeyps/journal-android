@@ -78,12 +78,21 @@ public class ThoseDaysActivity extends ActionBarActivity
         Fragment fragment = PlaceholderFragment.newInstance(position);
         if (fragment == null)
             return;
+
+        FragmentManager fragmentManager = getFragmentManager();
+        Fragment oldFragment = fragmentManager.findFragmentByTag(fragment.getClass().getSimpleName());
+        if (oldFragment != null) {
+            fragment = oldFragment;
+        }
+        if (fragment.isAdded()) {
+            return;
+        }
         Bundle args = new Bundle();
         args.putParcelable(Config.EXTRA_ACCOUNT, mAccount);
         fragment.setArguments(args);
-        FragmentManager fragmentManager = getFragmentManager();
+
         fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment)
+                .replace(R.id.container, fragment, fragment.getClass().getSimpleName())
                 .commit();
     }
 
