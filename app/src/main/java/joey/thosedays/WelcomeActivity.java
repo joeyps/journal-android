@@ -19,11 +19,11 @@ import android.view.View;
 import com.facebook.Session;
 import com.facebook.SessionState;
 import com.google.gson.Gson;
-import com.thosedays.util.AccountUtils;
-import com.thosedays.util.Worker;
 import com.thosedays.model.AuthToken;
 import com.thosedays.model.User;
 import com.thosedays.sync.Config;
+import com.thosedays.util.AccountUtils;
+import com.thosedays.util.Worker;
 import com.turbomanage.httpclient.BasicHttpClient;
 import com.turbomanage.httpclient.HttpResponse;
 
@@ -42,10 +42,12 @@ public class WelcomeActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Account account = getAccountIfExists();
-        String token = AccountUtils.getAuthToken(this, account, Config.AUTH_TYPE);
-        if (account != null && !TextUtils.isEmpty(token)) {
-            launchMainActivity(account);
-            finish();
+        if (account != null) {
+            String token = AccountUtils.getAuthToken(this, account, Config.AUTH_TYPE);
+            if (!TextUtils.isEmpty(token)) {
+                launchMainActivity(account);
+                finish();
+            }
             return;
         }
 
@@ -58,7 +60,7 @@ public class WelcomeActivity extends Activity {
                 loginWithFacebook();
             }
         });
-        printKeyHash();
+        //printKeyHash();
 
     }
 

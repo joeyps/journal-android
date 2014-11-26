@@ -24,6 +24,8 @@ public class AccountUtils {
     }
 
     public static String getAuthToken(Context context, Account account, String tokenType) {
+        if (account == null)
+            return null;
         return getSharedPreferences(context).getString(makeAccountSpecificPrefKey(account.name, PREFIX_PREF_AUTH_TOKEN), null);
     }
 
