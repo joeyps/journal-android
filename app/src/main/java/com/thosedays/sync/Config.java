@@ -11,8 +11,6 @@ public class Config {
     // Constants
     // The authority for the sync adapter's content provider
     public static final String AUTHORITY = "com.thosedays.sync.provider";
-    // An account type, in the form of a domain name
-    public static final String ACCOUNT_TYPE = "com.thosedays";
 
     public static final String HOST = "https://those-days.appspot.com";
     public static final String AUTH_URL = HOST + "/_auth";

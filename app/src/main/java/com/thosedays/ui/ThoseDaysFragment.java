@@ -80,6 +80,7 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
                 startActivity(intent);
             }
         });
+
         mAdapter = new EventCursorAdapter(
             getActivity(),                // Current context
             null,                // No Cursor yet
@@ -120,7 +121,7 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
                             EventContract.Events.PHOTO_HEIGHT,
                             EventContract.Events.EVENT_TIME
                         },     // Projection to return
-                        null,            // No selection clause
+                        EventContract.Events.DEFAULT_SELECTION,            // No selection clause
                         null,            // No selection arguments
                         EventContract.Events.SORT_BY_EVENT_TIME             // Default sort order
                 );
@@ -157,7 +158,6 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
         LOGD(TAG, "onActivityResult, requestCode=" + requestCode + " resultCode=" + resultCode);
         if (requestCode == REQUEST_ADD && resultCode == Activity.RESULT_OK) {
             SyncHelper.requestManualSync(mAccount, true);
-            getLoaderManager().restartLoader(URL_LOADER, null, this);
             Toast.makeText(getActivity(), "Event has been posted", Toast.LENGTH_LONG).show();
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -223,4 +223,5 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
 
         }
     }
+
 }

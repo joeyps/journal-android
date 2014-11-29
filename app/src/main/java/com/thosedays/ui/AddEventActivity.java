@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -30,7 +29,7 @@ import static com.thosedays.util.LogUtils.makeLogTag;
 /**
  * Created by joey on 14/11/18.
  */
-public class AddEventActivity extends ActionBarActivity {
+public class AddEventActivity extends BaseActivity {
 
     private static final String TAG = makeLogTag(AddEventActivity.class);
 
@@ -97,12 +96,7 @@ public class AddEventActivity extends ActionBarActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-               finish();
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+        return super.onOptionsItemSelected(item);
     }
 
     /**

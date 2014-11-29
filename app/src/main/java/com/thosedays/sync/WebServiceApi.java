@@ -88,6 +88,22 @@ public class WebServiceApi {
         }
     }
 
+    public String deleteDataFromServer(String api, String id) {
+
+        BasicHttpClient httpClient = new BasicHttpClient();
+        httpClient.addHeader(Config.HEADER_AUTHORIZATION, "access_token=" + mAuthToken);
+
+        HttpResponse response = httpClient.delete(String.format("%s%s/%s", mUrl, api, id), null);
+
+        if (response != null && response.getStatus() == HttpURLConnection.HTTP_OK) {
+            LOGD(TAG, "Server returned HTTP_OK, so session posting was successful.");
+            return response.getBodyAsString();
+        } else {
+            LOGE(TAG, "Error posting session: HTTP status " + response.getStatus());
+            return null;
+        }
+    }
+
     /**
      * Posts a session to the event server.
      *

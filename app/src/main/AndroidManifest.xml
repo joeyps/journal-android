@@ -50,8 +50,8 @@
             android:screenOrientation="portrait">
         </activity>
         <activity
-            android:theme="@style/AppTheme"
             android:name="com.thosedays.ui.EventDetailActivity"
+            android:theme="@style/AppTheme"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
         </activity>

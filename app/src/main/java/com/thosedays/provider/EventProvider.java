@@ -98,7 +98,7 @@ public class EventProvider extends ContentProvider {
         switch (match) {
             case EVENTS: {
                 db.insertOrThrow(EventDatabase.Tables.EVENTS, null, values);
-                //notifyChange(uri);
+                notifyChange(uri);
                 return EventContract.Events.buildEventUri(values.getAsString(EventContract.Events.EVENT_ID));
             }
             default: {
@@ -108,8 +108,20 @@ public class EventProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(Uri uri, String s, String[] strings) {
-        return 0;
+    public int delete(Uri uri, String selection, String[] selectionArgs) {
+//        String accountName = getCurrentAccountName(uri, false);
+        LOGV(TAG, "delete(uri=" + uri);
+//        if (uri == ScheduleContract.BASE_CONTENT_URI) {
+//            // Handle whole database deletes (e.g. when signing out)
+//            deleteDatabase();
+//            notifyChange(uri);
+//            return 1;
+//        }
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        final SelectionBuilder builder = buildSimpleSelection(uri);
+        int retVal = builder.where(selection, selectionArgs).delete(db);
+        notifyChange(uri);
+        return retVal;
     }
 
     @Override
@@ -120,7 +132,7 @@ public class EventProvider extends ContentProvider {
 
         final SelectionBuilder builder = buildSimpleSelection(uri);
         int retVal = builder.where(selection, selectionArgs).update(db, values);
-//        notifyChange(uri);
+        notifyChange(uri);
         return retVal;
     }
 
@@ -201,6 +213,17 @@ public class EventProvider extends ContentProvider {
             default: {
                 throw new UnsupportedOperationException("Unknown uri for " + match + ": " + uri);
             }
+        }
+    }
+
+    private void notifyChange(Uri uri) {
+        // We only notify changes if the caller is not the sync adapter.
+        // The sync adapter has the responsibility of notifying changes (it can do so
+        // more intelligently than we can -- for example, doing it only once at the end
+        // of the sync instead of issuing thousands of notifications for each record).
+        if (!EventContract.hasCallerIsSyncAdapterParameter(uri)) {
+            Context context = getContext();
+            context.getContentResolver().notifyChange(uri, null);
         }
     }
 }

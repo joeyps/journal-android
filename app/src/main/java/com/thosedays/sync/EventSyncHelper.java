@@ -69,36 +69,63 @@ public class EventSyncHelper {
         LOGD(TAG, "Number of unsynced data: " + c.getCount());
         List<String> questions = new ArrayList<String>();
         Map<String, Event> updated = new HashMap<String, Event>();
+        List<String> deletedList = new ArrayList<String>();
 
         while (c.moveToNext()) {
-            Map<String, Object> data = new HashMap<String, Object>();
             String id = c.getString(c.getColumnIndex(EventContract.Events._ID));
-            data.put(DATA_DESCRIPTION, c.getString(c.getColumnIndex(EventContract.Events.EVENT_DESCRIPTION)));
-            data.put(DATA_EVENT_TIME, c.getString(c.getColumnIndex(EventContract.Events.EVENT_TIME)));
+            int deleted = c.getInt(c.getColumnIndex(EventContract.Events.DELETED));
+            if (deleted == 0) {
+                Event event = uploadToServer(c);
+                if (event != null) {
+                    LOGI(TAG, "Successfully updated id " + id);
 
-            String fileUri = c.getString(c.getColumnIndex(EventContract.Events.PHOTO_URL));
-            Photo photo = null;
-            String response = null;
-            if (!TextUtils.isEmpty(fileUri)) {
-                response = mApi.sendFileToServer(WebServiceApi.API_PHOTO, Uri.parse(fileUri));
-                photo = new Gson().fromJson(response, Photo.class);
-                data.put(DATA_EVENT_TIME, photo.utc);
-            }
-
-            if (photo != null)
-                data.put(DATA_PHOTO_ID, photo.id);
-            response = mApi.sendDataToServer(WebServiceApi.API_EVENT, data);
-            if (response != null) {
-                LOGI(TAG, "Successfully updated id " + id);
-
-                updated.put(id, new Gson().fromJson(response, Event.class));
+                    updated.put(id, event);
+                } else {
+                    LOGE(TAG, "Couldn't update id " + id);
+                }
             } else {
-                LOGE(TAG, "Couldn't update id " + id);
+                String eventId = c.getString(c.getColumnIndex(EventContract.Events.EVENT_ID));
+                if (TextUtils.isEmpty(eventId)) {
+                    //haven't synced to server yet
+                    deletedList.add(id);
+                } else if (mApi.deleteDataFromServer(WebServiceApi.API_EVENT, eventId) != null) {
+                    deletedList.add(id);
+                }
             }
         }
-
         c.close();
 
+        updateEventsToDatabase(cr, updated);
+        deleteEventsFromDatabase(cr, deletedList);
+
+        return updated.size() > 0 || deletedList.size() > 0;
+    }
+
+    private Event uploadToServer(Cursor c) {
+        Map<String, Object> data = new HashMap<String, Object>();
+
+        data.put(DATA_DESCRIPTION, c.getString(c.getColumnIndex(EventContract.Events.EVENT_DESCRIPTION)));
+        data.put(DATA_EVENT_TIME, c.getString(c.getColumnIndex(EventContract.Events.EVENT_TIME)));
+
+        String fileUri = c.getString(c.getColumnIndex(EventContract.Events.PHOTO_URL));
+        Photo photo = null;
+        String response = null;
+        if (!TextUtils.isEmpty(fileUri)) {
+            response = mApi.sendFileToServer(WebServiceApi.API_PHOTO, Uri.parse(fileUri));
+            photo = new Gson().fromJson(response, Photo.class);
+            data.put(DATA_EVENT_TIME, photo.utc);
+        }
+
+        if (photo != null)
+            data.put(DATA_PHOTO_ID, photo.id);
+        response = mApi.sendDataToServer(WebServiceApi.API_EVENT, data);
+        if (response != null) {
+            return new Gson().fromJson(response, Event.class);
+        }
+        return null;
+    }
+
+    private void updateEventsToDatabase(ContentResolver cr, Map<String, Event> updated) {
         // Flip the "synced" flag to true for any successfully updated sessions, but leave them
         // in the database to prevent duplicate feedback
         for (Map.Entry<String, Event> e : updated.entrySet()) {
@@ -118,7 +145,11 @@ public class EventSyncHelper {
             contentValues.put(EventContract.Events.SYNCED, 1);
             cr.update(EventContract.Events.buildEventUri(e.getKey()), contentValues, null, null);
         }
+    }
 
-        return updated.size() > 0;
+    private void deleteEventsFromDatabase(ContentResolver cr, List<String> deleted) {
+        for (String id : deleted) {
+            cr.delete(EventContract.Events.buildEventUri(id), null, null);
+        }
     }
 }

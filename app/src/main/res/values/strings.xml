@@ -13,4 +13,10 @@
     <string name="action_settings">Settings</string>
 
     <string name="post">Post</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_delete">Delete</string>
+    <string-array
+        name="array_context_menu">
+        <item>@string/common_delete</item>
+    </string-array>
 </resources>

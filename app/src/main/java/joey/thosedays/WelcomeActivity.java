@@ -45,10 +45,10 @@ public class WelcomeActivity extends Activity {
         if (account != null) {
             String token = AccountUtils.getAuthToken(this, account, Config.AUTH_TYPE);
             if (!TextUtils.isEmpty(token)) {
+                AccountUtils.setActiveAccount(this, account.name);
                 launchMainActivity(account);
                 finish();
             }
-            return;
         }
 
         setContentView(R.layout.activity_welcome);
@@ -146,7 +146,7 @@ public class WelcomeActivity extends Activity {
         AccountManager accountManager =
                 (AccountManager) getSystemService(
                         ACCOUNT_SERVICE);
-        Account[] accounts = accountManager.getAccountsByType(Config.ACCOUNT_TYPE);
+        Account[] accounts = accountManager.getAccountsByType(AccountUtils.ACCOUNT_TYPE);
         if (accounts.length > 0) {
             Log.d(LOG_TAG, "loaded account " + accounts[0].name);
             return accounts[0];
@@ -167,7 +167,7 @@ public class WelcomeActivity extends Activity {
 
         // Create the account type and default account
         Account newAccount = new Account(
-                accountName, Config.ACCOUNT_TYPE);
+                accountName, AccountUtils.ACCOUNT_TYPE);
         /*
          * Add the account and account type, no password or user data
          * If successful, return the Account object, otherwise report an error.
@@ -179,7 +179,7 @@ public class WelcomeActivity extends Activity {
              * then call context.setIsSyncable(account, AUTHORITY, 1)
              * here.
              */
-
+            AccountUtils.setActiveAccount(this, newAccount.name);
             AccountUtils.setAuthToken(this, newAccount, Config.AUTH_TYPE, token);
             Log.d(LOG_TAG, "added account " + newAccount.name);
             return newAccount;
@@ -190,6 +190,7 @@ public class WelcomeActivity extends Activity {
              */
             Account account = getAccountIfExists();
             if (account != null) {
+                AccountUtils.setActiveAccount(this, account.name);
                 AccountUtils.setAuthToken(this, account, Config.AUTH_TYPE, token);
             }
             return account;

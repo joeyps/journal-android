@@ -22,11 +22,17 @@ public class EventContract {
         String PHOTO_HEIGHT = "photo_height";
         String TAGS = "tags";
         String EVENT_TIME = "event_time";
+        String DELETED = "deleted";
         String SYNCED = "synced";
     }
 
     private static final String PATH_EVENTS = "events";
     private static final String PATH_MESSAGES = "messages";
+
+    public static final String[] TOP_LEVEL_PATHS = {
+            PATH_EVENTS,
+            PATH_MESSAGES
+    };
 
     public static class Events implements EventColumns, BaseColumns {
         public static final String BLOCK_TYPE_FREE = "free";
@@ -34,6 +40,7 @@ public class EventContract {
         public static final String BLOCK_TYPE_KEYNOTE = "keynote";
 
         // ORDER BY clauses
+        public static final String DEFAULT_SELECTION = DELETED + "=0";
         public static final String SORT_BY_EVENT_TIME = EVENT_TIME + " DESC";
 
         public static final boolean isValidBlockType(String type) {

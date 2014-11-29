@@ -4,6 +4,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.OperationApplicationException;
+import android.net.Uri;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
 
@@ -124,10 +125,10 @@ public class RemoteDataHandler {
         // notify all top-level paths
         LOGD(TAG, "Notifying changes on all top-level paths on Content Resolver.");
         ContentResolver resolver = mContext.getContentResolver();
-//        for (String path : ScheduleContract.TOP_LEVEL_PATHS) {
-//            Uri uri = ScheduleContract.BASE_CONTENT_URI.buildUpon().appendPath(path).build();
-//            resolver.notifyChange(uri, null);
-//        }
+        for (String path : EventContract.TOP_LEVEL_PATHS) {
+            Uri uri = EventContract.BASE_CONTENT_URI.buildUpon().appendPath(path).build();
+            resolver.notifyChange(uri, null);
+        }
 
 
         // update our data timestamp
