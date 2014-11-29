@@ -12,8 +12,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.thosedays.provider.EventContract;
+import com.thosedays.sync.SyncHelper;
+import com.thosedays.util.AccountUtils;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -54,6 +57,8 @@ public class AddEventActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 save();
+                SyncHelper.requestManualSync(AccountUtils.getActiveAccount(AddEventActivity.this), true);
+                Toast.makeText(AddEventActivity.this, "Event has posted", Toast.LENGTH_LONG).show();
                 if (getParent() == null) {
                     setResult(Activity.RESULT_OK, null);
                 } else {
@@ -72,25 +77,17 @@ public class AddEventActivity extends BaseActivity {
                 startActivityForResult(photoPickerIntent, REQUEST_PICK_PHOTO);
             }
         });
+
+        Uri imageUri = getIntent().getExtras().getParcelable(Intent.EXTRA_STREAM);
+        if (imageUri != null)
+            loadPhoto(imageUri);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_PICK_PHOTO && resultCode == RESULT_OK) {
-            try {
-                final Uri imageUri = data.getData();
-                LOGD(TAG, "select photo uri=" + imageUri);
-                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 2;
-                final Bitmap bitmap = BitmapFactory.decodeStream(imageStream, null, options);
-
-                LOGD(TAG, "bitmap w=" + bitmap.getWidth() + " h=" + bitmap.getHeight());
-                mImageViewMain.setImageBitmap(bitmap);
-                mPhotoUri = imageUri;
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
+            final Uri imageUri = data.getData();
+            loadPhoto(imageUri);
         }
     }
 
@@ -99,10 +96,26 @@ public class AddEventActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void loadPhoto(Uri imageUri) {
+        LOGD(TAG, "select photo uri=" + imageUri);
+        try {
+            final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = 2;
+            final Bitmap bitmap = BitmapFactory.decodeStream(imageStream, null, options);
+
+            LOGD(TAG, "bitmap w=" + bitmap.getWidth() + " h=" + bitmap.getHeight());
+            mImageViewMain.setImageBitmap(bitmap);
+            mPhotoUri = imageUri;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Saves the session feedback using the appropriate content provider.
      */
-    public void save() {
+    private void save() {
 
         ContentValues values = new ContentValues();
         values.put(EventContract.Events.EVENT_ID, "");
@@ -119,8 +132,7 @@ public class AddEventActivity extends BaseActivity {
         values.put(EventContract.Events.EVENT_TIME, dateFormatGmt.format(new Date()));
 
 
-        Uri uri = getContentResolver()
-                .insert(EventContract.Events.CONTENT_URI, values);
+        Uri uri = getContentResolver().insert(EventContract.Events.CONTENT_URI, values);
         LOGD(TAG, null == uri ? "No event was saved" : uri.toString());
     }
 }

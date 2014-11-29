@@ -21,11 +21,9 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.thosedays.provider.EventContract;
 import com.thosedays.sync.Config;
-import com.thosedays.sync.SyncHelper;
 import com.thosedays.util.ImageLoader;
 
 import joey.thosedays.R;
@@ -157,8 +155,7 @@ public class ThoseDaysFragment extends Fragment implements LoaderManager.LoaderC
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         LOGD(TAG, "onActivityResult, requestCode=" + requestCode + " resultCode=" + resultCode);
         if (requestCode == REQUEST_ADD && resultCode == Activity.RESULT_OK) {
-            SyncHelper.requestManualSync(mAccount, true);
-            Toast.makeText(getActivity(), "Event has been posted", Toast.LENGTH_LONG).show();
+
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
