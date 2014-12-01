@@ -38,6 +38,7 @@ public class EventDetailActivity extends BaseActivity implements LoaderManager.L
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayShowTitleEnabled(false);
 
         setContentView(R.layout.activity_event_detail);
         mPager = (ViewPager) findViewById(R.id.pager);

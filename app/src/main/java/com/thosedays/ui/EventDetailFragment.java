@@ -27,6 +27,7 @@ public class EventDetailFragment extends Fragment implements ObservableScrollVie
 
     private ViewHolder viewHolder;
     private ObservableScrollView mScrollView;
+    private int mViewportHeight;
     private ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
         @Override
         public void onGlobalLayout() {
@@ -37,6 +38,7 @@ public class EventDetailFragment extends Fragment implements ObservableScrollVie
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        mViewportHeight = container.getHeight();
         Bundle args = getArguments();
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_event_detail, container, false);

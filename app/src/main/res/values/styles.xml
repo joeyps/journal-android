@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Set AppCompat’s color theming attrs -->
         <item name="colorPrimary">@color/main_color</item>
         <!-- colorPrimaryDark is used for the status bar -->
@@ -10,10 +10,20 @@
         <!-- colorAccent is used as the default value for colorControlActivated,
              which is used to tint widgets -->
         <item name="colorAccent">@color/accent</item>
-
         <!-- You can also set colorControlNormal, colorControlActivated
              colorControlHighlight, and colorSwitchThumbNormal. -->
     </style>
+
+    <style name="AppTheme.Overlay" parent="AppTheme">
+        <item name="colorPrimary">@android:color/transparent</item>
+        <item name="android:windowActionBarOverlay">true</item>
+
+        <!-- Support library compatibility -->
+        <item name="windowActionBarOverlay">true</item>
+        <!-- Remove shadows below action bar -->
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
     <style name="LogoText">
         <item name="android:fontFamily">sans-serif-black</item>
         <item name="android:gravity">center</item>
