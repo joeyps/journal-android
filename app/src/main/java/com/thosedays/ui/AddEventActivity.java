@@ -5,20 +5,28 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.thosedays.provider.EventContract;
 import com.thosedays.sync.SyncHelper;
 import com.thosedays.util.AccountUtils;
+import com.thosedays.util.DateTimeUtils;
+import com.thosedays.util.MediaUtils;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,7 +48,9 @@ public class AddEventActivity extends BaseActivity {
 
     private EditText mEditViewDescription;
     private ImageView mImageViewMain;
+    private TextView mTextViewEventTime;
     private Uri mPhotoUri;
+    private Date mEventTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +61,8 @@ public class AddEventActivity extends BaseActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
         mEditViewDescription = (EditText) findViewById(R.id.edit_description);
-
+        mTextViewEventTime = (TextView) findViewById(R.id.text_event_time);
+        setEventTime(DateTimeUtils.getNow());
         View btnPost = findViewById(R.id.button_post);
         btnPost.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,7 +89,7 @@ public class AddEventActivity extends BaseActivity {
             }
         });
 
-        Uri imageUri = getIntent().getExtras().getParcelable(Intent.EXTRA_STREAM);
+        Uri imageUri = getIntent().getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri != null)
             loadPhoto(imageUri);
     }
@@ -98,18 +109,14 @@ public class AddEventActivity extends BaseActivity {
 
     private void loadPhoto(Uri imageUri) {
         LOGD(TAG, "select photo uri=" + imageUri);
-        try {
-            final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inSampleSize = 2;
-            final Bitmap bitmap = BitmapFactory.decodeStream(imageStream, null, options);
+        mPhotoUri = imageUri;
+        new LoadPhotoTask().execute(imageUri);
+        new LoadExifTask().execute(imageUri);
+    }
 
-            LOGD(TAG, "bitmap w=" + bitmap.getWidth() + " h=" + bitmap.getHeight());
-            mImageViewMain.setImageBitmap(bitmap);
-            mPhotoUri = imageUri;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+    private void setEventTime(Date datetime) {
+        mEventTime = datetime;
+        mTextViewEventTime.setText(DateTimeUtils.sDateFormat.format(datetime));
     }
 
     /**
@@ -129,10 +136,80 @@ public class AddEventActivity extends BaseActivity {
         dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
 
         //Time in GMT
-        values.put(EventContract.Events.EVENT_TIME, dateFormatGmt.format(new Date()));
+        values.put(EventContract.Events.EVENT_TIME, dateFormatGmt.format(mEventTime));
 
 
         Uri uri = getContentResolver().insert(EventContract.Events.CONTENT_URI, values);
         LOGD(TAG, null == uri ? "No event was saved" : uri.toString());
+    }
+
+    private class LoadPhotoTask extends AsyncTask<Uri, Integer, Bitmap> {
+
+        protected Bitmap doInBackground(Uri... uris) {
+            Bitmap bitmap = null;
+            try {
+                final InputStream imageStream = getContentResolver().openInputStream(uris[0]);
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inSampleSize = 2;
+                bitmap = BitmapFactory.decodeStream(imageStream, null, options);
+
+                LOGD(TAG, "bitmap w=" + bitmap.getWidth() + " h=" + bitmap.getHeight());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            return bitmap;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        protected void onPostExecute(Bitmap bitmap) {
+            mImageViewMain.setImageBitmap(bitmap);
+        }
+    }
+
+    private class LoadExifTask extends AsyncTask<Uri, Integer, ExifInterface> {
+
+        protected ExifInterface doInBackground(Uri... uris) {
+            ExifInterface newExif = null;
+            File file = MediaUtils.getFile(getApplicationContext(), uris[0]);
+            try {
+                newExif = new ExifInterface(file.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return newExif;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        protected void onPostExecute(ExifInterface exif) {
+            LOGD(TAG, "[exif] TAG_DATETIME" + exif.getAttribute(ExifInterface.TAG_DATETIME));
+            LOGD(TAG, "[exif] TAG_GPS_ALTITUDE" + exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE));
+            LOGD(TAG, "[exif] TAG_GPS_LATITUDE" + exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
+            LOGD(TAG, "[exif] TAG_GPS_LONGITUDE" + exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+            LOGD(TAG, "[exif] TAG_GPS_DATESTAMP" + exif.getAttribute(ExifInterface.TAG_GPS_DATESTAMP));
+            LOGD(TAG, "[exif] TAG_GPS_TIMESTAMP" + exif.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP));
+            String gpsDate = exif.getAttribute(ExifInterface.TAG_GPS_DATESTAMP);
+            String gpsTime = exif.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP);
+            if (!TextUtils.isEmpty(gpsDate) && !TextUtils.isEmpty(gpsTime)) {
+                String[] dates = gpsDate.split(":");
+                String[] times = gpsTime.split(":");
+                if (dates.length >= 3 && times.length >=3) {
+                    Date eventTime = DateTimeUtils.getDate(
+                            Integer.parseInt(dates[0]),
+                            Integer.parseInt(dates[1]),
+                            Integer.parseInt(dates[2]),
+                            Integer.parseInt(times[0]),
+                            Integer.parseInt(times[1]),
+                            Integer.parseInt(times[2])
+                                );
+                    setEventTime(DateTimeUtils.toCurrentTimeZone(eventTime));
+                }
+            }
+        }
     }
 }

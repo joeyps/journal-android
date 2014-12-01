@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.thosedays.provider.EventContract;
@@ -59,7 +60,8 @@ public class EventDetailFragment extends Fragment implements ObservableScrollVie
             int w = args.getInt(EventContract.Events.PHOTO_WIDTH);
             int h = args.getInt(EventContract.Events.PHOTO_HEIGHT);
             int height = (int) (((float) width) / w * h);
-            imageView.setMinimumHeight(height);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, height);
+            imageView.setLayoutParams(lp);
             imageView.setTag(url);
             ImageLoader.load(viewHolder, url);
         } else {

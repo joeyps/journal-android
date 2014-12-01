@@ -113,7 +113,6 @@ public class EventSyncHelper {
         if (!TextUtils.isEmpty(fileUri)) {
             response = mApi.sendFileToServer(WebServiceApi.API_PHOTO, Uri.parse(fileUri));
             photo = new Gson().fromJson(response, Photo.class);
-            data.put(DATA_EVENT_TIME, photo.utc);
         }
 
         if (photo != null)
