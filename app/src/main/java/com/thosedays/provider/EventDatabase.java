@@ -36,6 +36,8 @@ public class EventDatabase extends SQLiteOpenHelper {
                 + EventColumns.PHOTO_URL + " TEXT NOT NULL,"
                 + EventColumns.PHOTO_WIDTH + " INTEGER NOT NULL,"
                 + EventColumns.PHOTO_HEIGHT + " INTEGER NOT NULL,"
+                + EventColumns.LOC_LAT + " REAL NOT NULL DEFAULT " + EventContract.INVALID_LOCATION + ","
+                + EventColumns.LOC_LNG + " REAL NOT NULL DEFAULT " + EventContract.INVALID_LOCATION + ","
                 + EventColumns.EVENT_TIME + " DATETIME NOT NULL,"
                 + EventColumns.DELETED + " INTEGER DEFAULT 0,"
                 + EventColumns.SYNCED + " INTEGER NOT NULL,"

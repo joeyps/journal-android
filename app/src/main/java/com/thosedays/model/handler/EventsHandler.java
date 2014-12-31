@@ -47,7 +47,7 @@ public class EventsHandler extends JSONHandler {
 //        long endTimeL = ParserUtils.parseTime(block.end);
 //        final String blockId = EventContract.Events.generateBlockId(startTimeL, endTimeL);
         builder.withValue(EventContract.Events.EVENT_ID, event.id);
-        builder.withValue(EventContract.Events.EVENT_DESCRIPTION, TextUtils.isEmpty(event.description) ? "" : event.description);
+        builder.withValue(EventContract.Events.EVENT_DESCRIPTION, TextUtils.isEmpty(event.description) ? "" : unescape(event.description));
         builder.withValue(EventContract.Events.EVENT_TIME, event.event_time);
         if (event.photo != null) {
             builder.withValue(EventContract.Events.PHOTO_URL, event.photo.thumb_url);
@@ -58,7 +58,23 @@ public class EventsHandler extends JSONHandler {
             builder.withValue(EventContract.Events.PHOTO_WIDTH, 0);
             builder.withValue(EventContract.Events.PHOTO_HEIGHT, 0);
         }
+        if (event.location != null) {
+            builder.withValue(EventContract.Events.LOC_LAT, event.location.lat);
+            builder.withValue(EventContract.Events.LOC_LNG, event.location.lng);
+        } else {
+            builder.withValue(EventContract.Events.LOC_LAT, EventContract.INVALID_LOCATION);
+            builder.withValue(EventContract.Events.LOC_LNG, EventContract.INVALID_LOCATION);
+        }
         builder.withValue(EventContract.Events.SYNCED, 1);
         list.add(builder.build());
+    }
+
+    private String unescape(String s) {
+        return s.replace("&gt;", ">")
+                .replace("&lt;", "<")
+                .replace("&quot;", "\"")
+                .replace("&apos;", "'")
+                .replace("&#39;", "'")
+                .replace("&amp;", "&");
     }
 }

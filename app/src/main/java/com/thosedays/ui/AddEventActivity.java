@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.thosedays.model.GeoPoint;
 import com.thosedays.provider.EventContract;
 import com.thosedays.sync.SyncHelper;
 import com.thosedays.util.AccountUtils;
@@ -51,6 +52,7 @@ public class AddEventActivity extends BaseActivity {
     private TextView mTextViewEventTime;
     private Uri mPhotoUri;
     private Date mEventTime;
+    private GeoPoint mLocation = new GeoPoint();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +65,7 @@ public class AddEventActivity extends BaseActivity {
         mEditViewDescription = (EditText) findViewById(R.id.edit_description);
         mTextViewEventTime = (TextView) findViewById(R.id.text_event_time);
         setEventTime(DateTimeUtils.getNow());
+        resetLocation();
         View btnPost = findViewById(R.id.button_post);
         btnPost.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,6 +122,11 @@ public class AddEventActivity extends BaseActivity {
         mTextViewEventTime.setText(DateTimeUtils.sDateFormat.format(datetime));
     }
 
+    private void resetLocation() {
+        mLocation.lat = EventContract.INVALID_LOCATION;
+        mLocation.lng = EventContract.INVALID_LOCATION;
+    }
+
     /**
      * Saves the session feedback using the appropriate content provider.
      */
@@ -128,8 +136,10 @@ public class AddEventActivity extends BaseActivity {
         values.put(EventContract.Events.EVENT_ID, "");
         values.put(EventContract.Events.EVENT_DESCRIPTION, mEditViewDescription.getText().toString());
         values.put(EventContract.Events.PHOTO_URL, mPhotoUri == null ? "" : mPhotoUri.toString());
-        values.put(EventContract.Events.PHOTO_WIDTH, 0);
-        values.put(EventContract.Events.PHOTO_HEIGHT, 0);
+        values.put(EventContract.Events.PHOTO_WIDTH, mPhotoUri == null ? 0 : mImageViewMain.getDrawable().getIntrinsicWidth());
+        values.put(EventContract.Events.PHOTO_HEIGHT, mPhotoUri == null ? 0 : mImageViewMain.getDrawable().getIntrinsicHeight());
+        values.put(EventContract.Events.LOC_LAT, mLocation.lat);
+        values.put(EventContract.Events.LOC_LNG, mLocation.lng);
         values.put(EventContract.Events.SYNCED, 0);
 
         SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -187,14 +197,17 @@ public class AddEventActivity extends BaseActivity {
         }
 
         protected void onPostExecute(ExifInterface exif) {
-            LOGD(TAG, "[exif] TAG_DATETIME" + exif.getAttribute(ExifInterface.TAG_DATETIME));
-            LOGD(TAG, "[exif] TAG_GPS_ALTITUDE" + exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE));
-            LOGD(TAG, "[exif] TAG_GPS_LATITUDE" + exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
-            LOGD(TAG, "[exif] TAG_GPS_LONGITUDE" + exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
-            LOGD(TAG, "[exif] TAG_GPS_DATESTAMP" + exif.getAttribute(ExifInterface.TAG_GPS_DATESTAMP));
-            LOGD(TAG, "[exif] TAG_GPS_TIMESTAMP" + exif.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP));
+            LOGD(TAG, "[exif] TAG_DATETIME " + exif.getAttribute(ExifInterface.TAG_DATETIME));
+            LOGD(TAG, "[exif] TAG_GPS_ALTITUDE " + exif.getAttribute(ExifInterface.TAG_GPS_ALTITUDE));
+            LOGD(TAG, "[exif] TAG_GPS_LATITUDE " + exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE));
+            LOGD(TAG, "[exif] TAG_GPS_LONGITUDE " + exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE));
+            LOGD(TAG, "[exif] TAG_GPS_LATITUDE_REF " + exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF));
+            LOGD(TAG, "[exif] TAG_GPS_LONGITUDE_REF " + exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF));
+            LOGD(TAG, "[exif] TAG_GPS_DATESTAMP " + exif.getAttribute(ExifInterface.TAG_GPS_DATESTAMP));
+            LOGD(TAG, "[exif] TAG_GPS_TIMESTAMP " + exif.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP));
             String gpsDate = exif.getAttribute(ExifInterface.TAG_GPS_DATESTAMP);
             String gpsTime = exif.getAttribute(ExifInterface.TAG_GPS_TIMESTAMP);
+            String photoTime = exif.getAttribute(ExifInterface.TAG_DATETIME);
             if (!TextUtils.isEmpty(gpsDate) && !TextUtils.isEmpty(gpsTime)) {
                 String[] dates = gpsDate.split(":");
                 String[] times = gpsTime.split(":");
@@ -209,7 +222,80 @@ public class AddEventActivity extends BaseActivity {
                                 );
                     setEventTime(DateTimeUtils.toCurrentTimeZone(eventTime));
                 }
+            } else if (!TextUtils.isEmpty(photoTime)) {
+                String[] photoTimes = photoTime.split(" ");
+                String[] dates = photoTimes[0].split(":");
+                String[] times = photoTimes[1].split(":");
+                Date eventTime = DateTimeUtils.getDate(
+                        Integer.parseInt(dates[0]),
+                        Integer.parseInt(dates[1]),
+                        Integer.parseInt(dates[2]),
+                        Integer.parseInt(times[0]),
+                        Integer.parseInt(times[1]),
+                        Integer.parseInt(times[2])
+                );
+                setEventTime(eventTime);
+            }
+
+            String gpsLat = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+            String gpsLatRef = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE_REF);
+            String gpsLng = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+            String gpsLngRef = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF);
+            GeoPoint p = convertExifGpsToDegree(gpsLat, gpsLatRef, gpsLng, gpsLngRef);
+            if (p != null) {
+                mLocation = p;
+            } else {
+                resetLocation();
             }
         }
+    }
+
+    private GeoPoint convertExifGpsToDegree(String gpsLat, String gpsLatRef, String gpsLng, String gpsLngRef) {
+        if (TextUtils.isEmpty(gpsLat) || TextUtils.isEmpty(gpsLatRef)
+                || TextUtils.isEmpty(gpsLng)|| TextUtils.isEmpty(gpsLngRef)) {
+            return null;
+        }
+        GeoPoint p = new GeoPoint();
+        double lat = EventContract.INVALID_LOCATION;
+        double lng = EventContract.INVALID_LOCATION;
+        if(gpsLatRef.equals("N")){
+            lat = convertToDegree(gpsLat);
+        }
+        else{
+            lat = 0 - convertToDegree(gpsLat);
+        }
+
+        if(gpsLngRef.equals("E")){
+            lng = convertToDegree(gpsLng);
+        }
+        else{
+            lng = 0 - convertToDegree(gpsLng);
+        }
+        p.lat = lat;
+        p.lng = lng;
+        return p;
+    }
+
+    private double convertToDegree(String stringDMS){
+        String[] DMS = stringDMS.split(",", 3);
+
+        String[] stringD = DMS[0].split("/", 2);
+        double D0 = Double.parseDouble(stringD[0]);
+        double D1 = Double.parseDouble(stringD[1]);
+        double d = D0/D1;
+
+        String[] stringM = DMS[1].split("/", 2);
+        double M0 = Double.parseDouble(stringM[0]);
+        double M1 = Double.parseDouble(stringM[1]);
+        double m = M0/M1;
+
+        String[] stringS = DMS[2].split("/", 2);
+        double S0 = Double.parseDouble(stringS[0]);
+        double S1 = Double.parseDouble(stringS[1]);
+        double s = S0/S1;
+
+        double result = d + (m/60) + (s/3600);
+
+        return result;
     }
 }

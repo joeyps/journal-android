@@ -90,7 +90,7 @@ public class SyncHelper {
 //            return false;
 //        }
 
-        //LOGD(TAG, "Starting remote sync.");
+        LOGD(TAG, "Starting remote sync.");
         RemoteDataFetcher remoteDataFetcher = new RemoteDataFetcher(mContext, account);
         // Fetch the remote data files via RemoteConferenceDataFetcher
         RawData[] dataFiles = remoteDataFetcher.fetchDataIfNewer(mDataHandler.getDataTimestamp());
