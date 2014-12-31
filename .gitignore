@@ -6,3 +6,5 @@ facebook/build/*
 app/build/*
 
 facebook/.project
+
+*.iml
