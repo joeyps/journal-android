@@ -110,6 +110,7 @@ public class WebServiceApi {
      * @return whether or not updating succeeded
      */
     public String sendFileToServer(String api, Uri uri) {
+        LOGD(TAG, "sendFileToServer api=" + api + " uri=" + uri);
         HttpURLConnection connection = null;
         DataOutputStream outputStream = null;
         String boundary =  "*****";
@@ -119,6 +120,7 @@ public class WebServiceApi {
         try
         {
             File file = MediaUtils.getFile(mContext, uri);
+            LOGD(TAG, "file=" + file.getAbsolutePath());
             final InputStream imageStream = new FileInputStream(file);
 
             URL url = new URL(mUrl + api);
@@ -136,10 +138,12 @@ public class WebServiceApi {
             connection.setRequestProperty("Cache-Control", "no-cache");
             connection.setRequestProperty("Content-Type", "multipart/form-data;boundary="+boundary);
 
+            LOGD(TAG, "Content-Disposition: form-data; name=\"files\";filename=\"" + file.getAbsolutePath().getBytes("UTF-8") +"\"" + crlf);
             //Start content wrapper
             outputStream = new DataOutputStream( connection.getOutputStream() );
             outputStream.writeBytes(twoHyphens + boundary + crlf);
-            outputStream.writeBytes("Content-Disposition: form-data; name=\"files\";filename=\"" + file.getAbsolutePath() +"\"" + crlf);
+            //workaround for chinese encoding error
+            outputStream.writeBytes("Content-Disposition: form-data; name=\"files\";filename=\"" + file.getAbsolutePath().getBytes("UTF-8") +"\"" + crlf);
             outputStream.writeBytes(crlf);
 
             int bytesAvailable = imageStream.available();
