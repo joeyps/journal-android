@@ -1,20 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<com.thosedays.ui.widget.ObservableScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/map_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:scrollbars="none">
-    <LinearLayout
-        android:id="@+id/map_container"
+    android:orientation="vertical">
+    <com.thosedays.ui.widget.ExpandingScrollView
+        android:id="@+id/slideup_panel"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
         android:orientation="vertical">
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:text="Test"
-            android:background="#cccccc"/>
-    </LinearLayout>
-
-</com.thosedays.ui.widget.ObservableScrollView>
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/material_deep_teal_200"
+                android:textSize="50dp"
+                android:textColor="@android:color/white"
+                android:text="Title\nLine1"
+                />
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="300dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="500dp"
+                    android:minHeight="600dp"
+                    android:background="@color/material_blue_grey_800"
+                    android:textSize="50dp"
+                    android:textColor="@android:color/white"
+                    android:text="1\n2\ntest\ntest\ntest\ntest\ntest\ntest\n15\n16\n17\n18\n19\n20"/>
+            </ScrollView>
+        </LinearLayout>
+    </com.thosedays.ui.widget.ExpandingScrollView>
+</FrameLayout>
